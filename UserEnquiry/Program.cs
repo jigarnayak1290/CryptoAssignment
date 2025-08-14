@@ -1,6 +1,8 @@
+using MerkleTree;
 using Microsoft.EntityFrameworkCore;
 using UserEnquiry;
 using UserEnquiry.Models;
+using UserEnquiry.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,9 +14,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //Register All Services
-builder.Services.AddScoped<UserEnquiry.UserEnquiryService>();     //Register User Enquiry Service
-builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("UserDb"));
+//Register Merkle Tree Repository as singleton(To keep the Merkle tree state across requests)
+builder.Services.AddSingleton<MerkleTreeRepo>();
+
 // Register the DbContext with an in-memory database for testing purposes
+builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("UserDb"));
+
+//Register User Enquiry Service as scoped
+builder.Services.AddScoped<UserEnquiry.UserEnquiryService>();
 
 var app = builder.Build();
 
@@ -33,6 +40,13 @@ using (var scope = app.Services.CreateScope())
         new UserInfo { UserId = 8, Balance = 8888 }
     );
     db.SaveChanges();
+
+    // Initialize the Merkle tree with user information
+    var merkleTreeRepo = scope.ServiceProvider.GetRequiredService<MerkleTreeRepo>();
+    var userEnquiryService = scope.ServiceProvider.GetRequiredService<UserEnquiryService>();
+
+    MerkleTreeNode? merkleTreeRoot = userEnquiryService.GetMerkleRootOfUsers();
+    merkleTreeRepo.SetMerkleTreeRoot(merkleTreeRoot); 
 }
 
 // Configure the HTTP request pipeline.

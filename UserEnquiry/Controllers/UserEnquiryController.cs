@@ -23,5 +23,16 @@ namespace UserEnquiry.Controllers
             }
             return Ok(userMerkleTree);
         }
+
+        [HttpGet("getmerkleproofofuser")]
+        public IActionResult GetMerkleProofOfUser(string UserId)
+        {
+            var userMerkleProof = _userEnquiryService.GetMerkleProofOfUser(UserId);
+            if (userMerkleProof == null)
+            {
+                return BadRequest("Failed to find merkle root for given user");
+            }
+            return Ok(userMerkleProof);
+        }
     }
 }

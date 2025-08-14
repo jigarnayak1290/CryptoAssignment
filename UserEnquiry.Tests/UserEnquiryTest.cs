@@ -25,7 +25,7 @@ namespace UserEnquiry.Tests
         private AppDbContext GetInMemoryDbContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: "UserDb_" + Guid.NewGuid())
+                .UseInMemoryDatabase(databaseName: "UserDb")
                 .Options;
 
             return new AppDbContext(options);

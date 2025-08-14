@@ -57,6 +57,56 @@ namespace MerkleTree
             return MakeMerkleTree(BranchHashTag, MerkleLeafNodes);
         }
 
+        public List<MerkleNodeTuple>? GetMerklePath(MerkleTreeNode? root, string leafNode)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+            var path = new List<MerkleNodeTuple>();
+            var leafHash = ToHexString(HashTransactionWithTag(LeafHashTag, Encoding.UTF8.GetBytes(leafNode)));
+            
+            if (GetMerklePathRecursive(root, leafHash, path))
+            {
+                //If need to add merkle root node at the end of the path
+                //path.Add(new MerkleNodeTuple(root.Hash, null));
+                return path;
+            }
+            else
+            {
+                // If the leaf node is not found, return null
+                return null;
+            }            
+        }
+
+        public bool GetMerklePathRecursive(MerkleTreeNode? node, string leafHash, List<MerkleNodeTuple> path)
+        {
+            if (node == null)
+            {
+                return false;
+            }
+            // If we found the leaf node, we can stop searching
+            if (node.Hash == leafHash)
+            {
+                return true;
+            }
+            // Check if the left child exists and recurse into it
+            if (GetMerklePathRecursive(node.Left, leafHash, path))
+            {
+                path.Add(new MerkleNodeTuple(node.Right.Hash, true));
+                return true;
+            }
+            // Check if the right child exists and recurse into it
+            if (GetMerklePathRecursive(node.Right, leafHash, path))
+            {
+                path.Add(new MerkleNodeTuple(node.Left.Hash, false));
+                return true;
+            }
+
+            // If neither child contains the leaf node, return false
+            return false; 
+        }
+
         /// <summary>
         /// Generate merkletree from given leaf nodes
         /// </summary>
@@ -198,4 +248,13 @@ namespace MerkleTree
         string Hash,
         MerkleTreeNode? Left = null,
         MerkleTreeNode? Right = null);
+
+    /// <summary>
+    /// Single node of user merkle tree
+    /// </summary>
+    /// <param name="HashTupleString">Merkle node</param>
+    /// <param name="IsRightNode">whether this node is right node or left (if true than node is right else left)</param>
+    public record MerkleNodeTuple(
+        string? HashTupleString = null,
+        Boolean? IsRightNode = null);
 }
