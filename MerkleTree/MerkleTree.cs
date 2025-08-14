@@ -147,8 +147,30 @@ namespace MerkleTree
             var tagBytes = Encoding.UTF8.GetBytes(hashTag);
             var tagHash = SHA256.HashData(tagBytes);
 
-            var concateTagHashWithTransaction = tagHash.Concat(tagHash).Concat(cryptoTransaction).ToArray();
+            //var concateTagHashWithTransaction = tagHash.Concat(tagHash).Concat(cryptoTransaction).ToArray();
+            //Improved version using ConcatAll method
+            var concateTagHashWithTransaction = ConcatAll(tagHash, tagHash, cryptoTransaction);
             return SHA256.HashData(concateTagHashWithTransaction);
+        }
+
+        /// <summary>
+        /// Fast, efficient method to concatenate multiple byte arrays into a single byte array. (Single allocation, no iterator overload)
+        /// </summary>
+        /// <param name="arrays">Items to be concat</param>
+        /// <returns></returns>
+        public static byte[] ConcatAll(params byte[][] arrays)
+        {
+            var totalLength = arrays.Sum(a => a.Length);
+            var result = new byte[totalLength];
+            int offset = 0;
+
+            foreach (var array in arrays)
+            {
+                Buffer.BlockCopy(array, 0, result, offset, array.Length);
+                offset += array.Length;
+            }
+
+            return result;
         }
 
         ///// <summary>
