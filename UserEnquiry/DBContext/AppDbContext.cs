@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UserEnquiry.Models;
 
-namespace UserEnquiry
+namespace UserEnquiry.DBContext
 {
     public class AppDbContext : DbContext
     {

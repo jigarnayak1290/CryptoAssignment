@@ -1,17 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UserEnquiry.Services;
 
 namespace UserEnquiry.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserEnquiryController : ControllerBase
+    public class UserEnquiryController(UserEnquiryService userEnquiryService) : ControllerBase
     {
-        private readonly UserEnquiryService _userEnquiryService;
-
-        public UserEnquiryController(UserEnquiryService userEnquiryService)
-        {
-            _userEnquiryService = userEnquiryService;
-        }
+        private readonly UserEnquiryService _userEnquiryService = userEnquiryService;
 
         [HttpGet("getmerklerootofusers")]
         public IActionResult GetMerkleRootOfUsers()

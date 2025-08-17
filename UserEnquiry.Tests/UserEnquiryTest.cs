@@ -1,39 +1,54 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using UserEnquiry.DBContext;
 using UserEnquiry.Models;
+using UserEnquiry.Repository;
+using UserEnquiry.Services;
 
 namespace UserEnquiry.Tests
 {
     public class UserEnquiryTest
     {
+        private readonly IServiceProvider? _provider;
+
+        public UserEnquiryTest()
+        {
+            // Initialize the service provider
+            var services = new ServiceCollection();
+            services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("UserDb"));
+            services.AddScoped<UserMerkleTreeRepo>();
+            _provider = services.BuildServiceProvider();            
+        }
+
         [Fact]
         public void Test_UerIdWithBalance()
         {
             // Arrange test data (Example transactions to be hashed)
-            // In a real-world scenario, these would be actual transaction data.
-            var context = GetInMemoryDbContext();
-            SeedDatabase(context);            
+            // In a real-world scenario, these would be actual transaction data.            
+            addTestUserData(_provider);
+
+            // Build the Merkle tree from user info strings and set it in the repository
+            UserDataInitializeService.InitializeDailyData(_provider);
 
             // Act (calculate the Merkle root by passing Hash tags)
-            var service = new UserEnquiryService(context);
-            var result = service.GetMerkleRootOfUsers();
+            var userMerkleRoot = new UserEnquiryService(_provider.GetRequiredService<AppDbContext>());
+            var merkleRoot = userMerkleRoot.GetMerkleRootOfUsers();
 
             // Assert (Checking the root hash with result)
-            var rootHash = result.Hash;
+            var rootHash = merkleRoot.Hash;
             Assert.Equal("b1231de33da17c23cebd80c104b88198e0914b0463d0e14db163605b904a7ba3", rootHash);
         }
 
-        private AppDbContext GetInMemoryDbContext()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="provider"></param>
+        private void addTestUserData(IServiceProvider provider)
         {
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: "UserDb")
-                .Options;
+            var inMemoryUserDB = provider.GetRequiredService<AppDbContext>();
 
-            return new AppDbContext(options);
-        }
-        private void SeedDatabase(AppDbContext context)
-        {
             // Seed the database with sample user data
-            context.UserInfos.AddRange(
+            inMemoryUserDB.UserInfos.AddRange(
                 new UserInfo { UserId = 1, Balance = 1111 },
                 new UserInfo { UserId = 2, Balance = 2222 },
                 new UserInfo { UserId = 3, Balance = 3333 },
@@ -43,7 +58,7 @@ namespace UserEnquiry.Tests
                 new UserInfo { UserId = 7, Balance = 7777 },
                 new UserInfo { UserId = 8, Balance = 8888 }
             );
-            context.SaveChanges();
+            inMemoryUserDB.SaveChanges();
         }
     }
 }

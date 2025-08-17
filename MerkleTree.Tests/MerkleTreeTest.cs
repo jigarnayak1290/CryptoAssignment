@@ -2,6 +2,9 @@ namespace MerkleTree.Tests
 {
     public class MerkleTreeTest
     {
+        /// <summary>
+        /// Sample test for Merkle Tree calculation
+        /// </summary>
         [Fact]
         public void Test_ABCDE_transaction_sample()
         {

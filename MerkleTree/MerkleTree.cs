@@ -48,15 +48,21 @@ namespace MerkleTree
             }
 
             //Calculate hash of individual leaf node
-            List<MerkleTreeNode> MerkleLeafNodes = _leafNodes.Select(
+            List<MerkleTreeNode> HashOfMerkleLeafNodes = _leafNodes.Select(
                 t => new MerkleTreeNode(
                     Hash: ToHexString(HashTransactionWithTag(LeafHashTag, Encoding.UTF8.GetBytes(t)))
                 )).ToList();
 
             //Make Merkle tree from hashed leaf nodes
-            return MakeMerkleTree(BranchHashTag, MerkleLeafNodes);
+            return MakeMerkleTree(BranchHashTag, HashOfMerkleLeafNodes);
         }
 
+        /// <summary>
+        /// Get merle path for given leaf node
+        /// </summary>
+        /// <param name="root">Root node</param>
+        /// <param name="leafNode">Original leaf node text (Without Hash)</param>
+        /// <returns>Merkle path from user leaf node to root node</returns>
         public List<MerkleNodeTuple>? GetMerklePath(MerkleTreeNode? root, string leafNode)
         {
             if (root == null)
@@ -79,24 +85,34 @@ namespace MerkleTree
             }            
         }
 
-        public bool GetMerklePathRecursive(MerkleTreeNode? node, string leafHash, List<MerkleNodeTuple> path)
+        /// <summary>
+        /// Generate Merkle path recursively from given leaf hash node to root node.
+        /// </summary>
+        /// <param name="node">Root node</param>
+        /// <param name="leafHash">leaf hash</param>
+        /// <param name="path">List of merkle nodes</param>
+        /// <returns>If path found return True and add full path in path parameter else return false</returns>
+        private bool GetMerklePathRecursive(MerkleTreeNode? node, string leafHash, List<MerkleNodeTuple> path)
         {
             if (node == null)
             {
                 return false;
             }
+
             // If we found the leaf node, we can stop searching
             if (node.Hash == leafHash)
             {
                 return true;
             }
-            // Check if the left child exists and recurse into it
+
+            // Check if the left child exists then recurse into it
             if (GetMerklePathRecursive(node.Left, leafHash, path))
             {
                 path.Add(new MerkleNodeTuple(node.Right.Hash, true));
                 return true;
             }
-            // Check if the right child exists and recurse into it
+
+            // Check if the right child exists then recurse into it
             if (GetMerklePathRecursive(node.Right, leafHash, path))
             {
                 path.Add(new MerkleNodeTuple(node.Left.Hash, false));
@@ -244,6 +260,12 @@ namespace MerkleTree
 
     }
 
+    /// <summary>
+    /// Represents a node in a Merkle tree, containing a hash and optional references to left and right child nodes.
+    /// </summary>
+    /// <param name="Hash">The hash value associated with this node. Typically represents the data or combined hash of child nodes.</param>
+    /// <param name="Left">The left child node of this node, or <see langword="null"/> if there is no left child.</param>
+    /// <param name="Right">The right child node of this node, or <see langword="null"/> if there is no right child.</param>
     public record MerkleTreeNode(
         string Hash,
         MerkleTreeNode? Left = null,
