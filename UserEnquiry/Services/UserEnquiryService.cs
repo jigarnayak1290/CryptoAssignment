@@ -50,8 +50,8 @@ namespace UserEnquiry.Services
             }
 
             //Initialize the Merkle tree service and Generate the Merkle proof for the users
-            var merkleTreeService = new MerkleTree.MerkleTree(HashTagForLeaf, HashTagForBranch);
-            List<MerkleNodeTuple>? merkleNodeTuples = merkleTreeService.GetMerklePath(merkleRoot, $"({userInfo.UserId},{userInfo.Balance})");
+            var merkleTreeLibrary = new MerkleTree.MerkleTree(HashTagForLeaf, HashTagForBranch);
+            List<MerkleNodeTuple>? merkleNodeTuples = merkleTreeLibrary.GetMerklePath(merkleRoot, $"({userInfo.UserId},{userInfo.Balance})");
             if (merkleNodeTuples == null || merkleNodeTuples.Count == 0)
             {
                 return null; // Return empty proof if Merkle root is not available
