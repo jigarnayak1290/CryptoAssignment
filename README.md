@@ -8,10 +8,46 @@
  - This path consists of the sibling hashes required to verify the inclusion of the user's leaf node in the Merkle root.
  - The path does not include the Merkle root itself, only the hashes needed to recompute it from the leaf.
 
+1.3 Implementation Details:
+- Merkle Tree Construction:
+     I implemented the Merkle tree logic without relying on third-party libraries to better understand its internal workings.
+     Entity Framework Core was used to simulate an in-memory database for storing user data.
+- Performance Considerations:
+     Although hashing is CPU-bound, I choose to store the Merkle tree in an in-memory repository since user data (ID and balance) updates only once per day.
+     This design reduces the need to recompute the Merkle tree on every API request, lowering CPU usage and improving I/O efficiency.
+     Fetching a user for Merkle proof generation is fast and direct, using the primary key from the in-memory store.
+- Functional Programming Principles:
+     Used record types for immutability
+     Passed data via IEnumerable to prevent mutation
+     Functions are designed to perform only their intended tasks
+- Hashing Strategy:
+     All hash functions use BIP340-compatible tagged hashing for consistency and security.
 
-#### 2. Sequence Diagrams
+#### 2. System Diagram
+![Diagram](./Diagram/MerkleTree.png)
 
-##### 2.1 Program Start-up
+##### 2.1 API Controller / End points
+	- getmerklerootofusers
+ 	- getmerkleproofofuser (With User ID as parameter)
+  
+##### 2.2 User Enquiry Service
+	- GetMerkleRootOfUsers
+ 	- GetMerkleProofOfUser (With User ID as parameter)
+  
+##### 2.3 Merkle Tree Repository
+	- Store Merkle tree for fast access (To avoide Merkle tree creation on each request)
+
+##### 2.4 Merkle Tree Library
+	- Create Merkle tree
+ 	- Create Merkle Path (Merkle Proof)
+
+##### 2.5 Scheduler Service
+	- Update Merkle Tree repository (Once in a day by fetching Updated user)
+  
+  
+#### 3. Sequence Diagrams
+
+##### 3.1 Program Start-up
 ```plaintext
 Program.cs			AppDbContext     UserDataInitializer     MerkleTreeLibrary     UserMerkleTreeRepo
 	|					|                   |                   	|                       |
@@ -33,7 +69,7 @@ Send DBContxt   		|                   |                   	|                    
 	|               	|					|						|				(For reference)
 Start WebApi <------------------------------| <---------------------------------------------|
 ```
-##### 2.2 Get Merkle root of [User Id] & [User Balance]
+##### 3.2 Get Merkle root of [User Id] & [User Balance]
 ```plaintext
 Client     	WebApi-Get     	UserEnquiryController	UserEnquiryService	UserMerkleTreeRepo
 	|			|					|						|					|
@@ -47,7 +83,7 @@ Client     	WebApi-Get     	UserEnquiryController	UserEnquiryService	UserMerkleT
 	|			|					|						|			 Return Merkle Tree
 Merkle Tree	<---| <-----------------| <---------------------| <-----------------|
 ```
-##### 2.3 Get Merkle path (proof) of specific [User Id] and return it with User balance.
+##### 3.3 Get Merkle path (proof) of specific [User Id] and return it with User balance.
 ```plaintext
 Client     	WebApi-Get     	UserEnquiryController	UserEnquiryService	InMemoryDB	UserMerkleTreeRepo	MerkleTreeLibrary
 	|			|					|						|				|				|					|
@@ -73,3 +109,5 @@ Client     	WebApi-Get     	UserEnquiryController	UserEnquiryService	InMemoryDB	
 	|			|					|			 User ID & Balance			|				|					|
 Merkle Path,<---| <-----------------| <-------------------- |				|				|					|
 User ID & Bal. 	|					|						|				|				|					|
+
+## Thank you for reading content. ##
