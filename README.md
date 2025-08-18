@@ -20,7 +20,7 @@ Initialize InMeomryDB   |                   |                   	|              
 	|-----------------> |                   |                   	|                       |
 	|		Return DB with Sample User		|                   	|                       |
 	| <-----------------|                   |                   	|                       |
-Send DB users   		|                   |                   	|                       |
+Send DBContxt   		|                   |                   	|                       |
 	|-------------------------------------> |                   	|                       |
 	|               	|	   Call Merkle Library with user info	|                       |
 	|               	|                   |---------------------> |                       |
