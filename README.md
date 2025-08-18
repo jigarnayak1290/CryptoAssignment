@@ -25,7 +25,6 @@
 
 #### 2. System Diagram
 ![Diagram](./Diagram/MerkleTree.png)
-
 ##### 2.1 API Controller / End points
 	- getmerklerootofusers
  	- getmerkleproofofuser (With User ID as parameter)
